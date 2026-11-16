@@ -147,5 +147,9 @@ data/                      generated nodes and road links
 outputs/                   plans, criticality, simulation results, figures
 ```
 
+## How this was built
+
+The code was written with AI coding assistance (Claude, by Anthropic). I chose the problem, designed the model (network, routing formulation, disruption scenarios and planning policies), set the assumptions documented above, and checked the results: the heuristic against the exact MILP on small instances, the test suite in `tests/`, and the findings against the simulation output. The commit history records the AI assistance in each commit's co-author line.
+
 ## Author
 Ganesh Darapureddi · B.Tech Dairy Technology (SVVU Tirupati) · PGDM Finance & Business Analytics · Executive Programme in Business Analytics & AI (IIM Bangalore)
