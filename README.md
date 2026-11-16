@@ -2,6 +2,8 @@
 
 **Optimisation, network analysis and disruption simulation for a rural dairy supply chain**
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://bmcu-milk-routing.streamlit.app)  **Try it in your browser, nothing to install:** https://bmcu-milk-routing.streamlit.app
+
 Village Bulk Milk Cooling Units (BMCUs) chill farmers' milk until an insulated tanker collects it and brings it to the dairy plant. The milk must be collected within its quality window, every tanker has a fixed capacity, and rural roads, especially low causeways, close in heavy rain. This project plans the daily tanker routes, finds the road links the network depends on most, and tests how each plan holds up when disruption hits.
 
 The setting is an illustrative network of 30 BMCUs around a dairy plant near Tirupati, Andhra Pradesh. **All data is synthetic** (see [Assumptions](#assumptions-and-limitations)).
@@ -103,7 +105,9 @@ The same structure applies to keeping diesel flowing to critical customers after
 
 ## Interactive app
 
-Change the settings with sliders and see the results, without editing any code:
+**Online:** open https://bmcu-milk-routing.streamlit.app. If the app has been idle it shows a "wake up" button first and takes about a minute to start.
+
+**On your own machine:**
 
 ```bash
 pip install -r requirements.txt
