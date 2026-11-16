@@ -7,3 +7,4 @@ ortools>=9.8
 simpy>=4.1
 matplotlib>=3.8
 pytest>=8.0
+streamlit>=1.50

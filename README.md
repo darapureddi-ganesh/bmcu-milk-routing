@@ -101,6 +101,20 @@ The same structure applies to keeping diesel flowing to critical customers after
 | Standby tanker | Support from commercial operators or the Defence Force |
 | Litres stranded or late | Unmet critical demand |
 
+## Interactive app
+
+Change the settings with sliders and see the results, without editing any code:
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Your browser opens the app. Set the fleet (tankers, capacity, speed, return time), the disruption (flooding,
+breakdowns, slower roads, volume swings), the policy buffers and the costs, then press **Run model**. A run
+takes 15 to 30 seconds. The app uses exactly the same routing, network and simulation code as `run_all.py`.
+"Fast" planning uses a 3-second search per plan, so its plans can cost slightly more than the full run's.
+
 ## Run it
 
 ```bash
@@ -113,6 +127,7 @@ python -m pytest -q         # sanity tests
 ## Project structure
 
 ```
+app.py                     interactive app (streamlit run app.py)
 run_all.py                 full pipeline: scenario -> network -> optimisation -> simulation -> results
 src/bmcu/config.py         every assumption and parameter in one place
 src/bmcu/scenario.py       illustrative BMCU network generator
