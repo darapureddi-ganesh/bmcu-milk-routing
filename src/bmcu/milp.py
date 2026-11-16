@@ -15,7 +15,7 @@ subject to
   load:     q[j] >= q[i] + demand[j]          if x[i,j] = 1     (also removes sub-tours)
             demand[i] <= q[i] <= capacity
 
-Solved exactly with HiGHS. Practical for small instances; the full network
+Solved exactly with HiGHS (or CBC, which ships with PuLP 3.x). Practical for small instances; the full network
 uses the OR-Tools heuristic in routing.py, checked against this model.
 """
 import time as _time
@@ -25,6 +25,24 @@ import pulp
 from .instance import Instance
 
 
+def _var(m, name, low=None, up=None, cat="Continuous"):
+    """Create a variable with either the PuLP 3.x or the PuLP 4.x API."""
+    if hasattr(m, "add_variable"):  # PuLP 4.x
+        return m.add_variable(name, low, up, cat=cat)
+    return pulp.LpVariable(name, low, up, cat=cat)  # PuLP 3.x
+
+
+def _solver(time_limit_s):
+    """HiGHS if available, otherwise the CBC solver bundled with PuLP 3.x."""
+    try:
+        solver = pulp.HiGHS(msg=False, timeLimit=time_limit_s)
+        if solver.available():
+            return solver
+    except Exception:
+        pass
+    return pulp.PULP_CBC_CMD(msg=False, timeLimit=time_limit_s)
+
+
 def solve_milp(inst: Instance, time_limit_s: int = 300) -> dict:
     N = range(inst.n)
     C = range(1, inst.n)
@@ -32,9 +50,9 @@ def solve_milp(inst: Instance, time_limit_s: int = 300) -> dict:
     M = inst.close + inst.service.max() + inst.time.max()
 
     m = pulp.LpProblem("milk_collection_cvrptw", pulp.LpMinimize)
-    x = {(i, j): m.add_variable(f"x_{i}_{j}", cat="Binary") for i, j in arcs}
-    t = {i: m.add_variable(f"t_{i}", float(inst.ready[i]), float(inst.deadline[i])) for i in C}
-    q = {i: m.add_variable(f"q_{i}", float(inst.demand[i]), float(inst.capacity)) for i in C}
+    x = {(i, j): _var(m, f"x_{i}_{j}", 0, 1, cat="Binary") for i, j in arcs}
+    t = {i: _var(m, f"t_{i}", float(inst.ready[i]), float(inst.deadline[i])) for i in C}
+    q = {i: _var(m, f"q_{i}", float(inst.demand[i]), float(inst.capacity)) for i in C}
 
     m += (inst.fixed_cost * pulp.lpSum(x[0, j] for j in C)
           + inst.cost_per_km * pulp.lpSum(inst.dist[i, j] * x[i, j] for i, j in arcs))
@@ -55,13 +73,20 @@ def solve_milp(inst: Instance, time_limit_s: int = 300) -> dict:
         m += t[i] + inst.service[i] + inst.time[i, 0] <= inst.close + M * (1 - x[i, 0]), f"back_{i}"
 
     start = _time.perf_counter()
-    stats = m.solve(pulp.HiGHS(msg=False, timeLimit=time_limit_s))
+    result = m.solve(_solver(time_limit_s))
     secs = _time.perf_counter() - start
 
-    status = stats.status.name  # "Optimal", "TimeLimit", "Infeasible", ...
+    if hasattr(result, "status"):  # PuLP 4.x returns a stats object
+        status = result.status.name
+        best_bound = getattr(result, "best_bound", None)
+    else:  # PuLP 3.x returns a status code
+        status = pulp.LpStatus[result]
+        best_bound = None
+
     routes = []
-    if status in ("Optimal", "TimeLimit"):
-        succ = {(i): j for (i, j) in arcs if (x[i, j].value() or 0) > 0.5}
+    has_solution = any((v.value() or 0) > 0.5 for v in x.values())
+    if has_solution and status not in ("Infeasible", "Unbounded"):
+        succ = {i: j for (i, j) in arcs if (x[i, j].value() or 0) > 0.5}
         for j in C:
             if (x[0, j].value() or 0) > 0.5:
                 route, cur = [], j
@@ -69,6 +94,6 @@ def solve_milp(inst: Instance, time_limit_s: int = 300) -> dict:
                     route.append(cur)
                     cur = succ[cur]
                 routes.append(route)
-    objective = m.objective.value() if routes else None
-    return dict(status=status, objective=objective, best_bound=getattr(stats, "best_bound", None),
+    objective = pulp.value(m.objective) if routes else None
+    return dict(status=status, objective=objective, best_bound=best_bound,
                 seconds=secs, routes=routes)

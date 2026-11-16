@@ -104,7 +104,7 @@ The same structure applies to keeping diesel flowing to critical customers after
 ## Run it
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt   # needs Python 3.10 or newer
 python run_all.py --quick   # about 1.5 minutes, 50 replications
 python run_all.py           # about 4 minutes, 500 replications (the results above)
 python -m pytest -q         # sanity tests
