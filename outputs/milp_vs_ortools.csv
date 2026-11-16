@@ -1,0 +1,5 @@
+bmcus,milp_status,milp_cost_inr,milp_seconds,ortools_cost_inr,gap_pct,feasible
+7,Optimal,15042,0.3,15042,0.0,True
+8,Optimal,24426,2.1,24426,0.0,True
+9,Optimal,23298,5.0,23298,0.0,True
+10,Optimal,25770,21.5,25770,0.0,True

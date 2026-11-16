@@ -1,0 +1,5 @@
+policy,tankers,planned_km,planned_cost_inr,max_load_l,latest_return
+P0 Cost-optimal,8,996,55888,9940,11:37
+P1 Capacity buffer,9,1176,64622,8480,10:58
+P2 Buffer + time slack,9,1176,64622,8480,10:54
+P3 Buffer + standby tanker,9,1176,64622,8480,10:58
